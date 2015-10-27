@@ -74,11 +74,15 @@ else:
     output = output + "\n"
 
 n_r = ["OK", "WARNING", "CRITICAL", "UNKNOWN"]
+h_r = ["", "color:orange", "color:red", "color:blue"]
 
 for a in result:
+    if args.html:
+        output = output + '<p style="' + h_r[a[7]] + '">'
+
     output = output + a[0] + "(" + a[1] + ") " + n_r[a[7]] + " current: " + str(a[2]) + " worst: " + str(a[3]) + " thresh: " + str(a[8]) + " raw: " + str(a[6])
     if args.html:
-        output = output + "</br>"
+        output = output + "</p>"
     else:
         output = output + "\n"
 if args.noperf:
