@@ -7,6 +7,7 @@ import re, sys, os
 argp = argparse.ArgumentParser(description=__doc__)
 argp.add_argument('-D', '--device', default='/dev/sda')
 argp.add_argument('-A', '--attributes', default='all')
+argp.add_argument('-R', '--raw', default=False, action="store_true")
 
 args = argp.parse_args()
 
@@ -52,14 +53,14 @@ for check_attribute in check_attributes:
 
     if check_attribute.type == "Pre-fail":
         if int(check_attribute.value) > int(check_attribute.thresh):
-            ok.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw])
+            ok.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw, "C"])
         else:
-            crit.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw])
+            crit.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw, "C"])
     else:
         if int(check_attribute.value) > int(check_attribute.thresh):
-           ok.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw])
+           ok.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw, "W"])
         else:
-            warn.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw])
+            warn.append([check_attribute.name, check_attribute.value, check_attribute.thresh, check_attribute.type, check_attribute.raw, "W"])
     
 ret = 0
 out = "OK"
@@ -74,21 +75,47 @@ if len(crit) > 1:
 retstr = out
 
 for i in crit:
-    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2]
+    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2] + " RAW: " + i[4] + ","
 for i in warn:
-    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2]
+    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2] + " RAW: " + i[4] + ","
 for i in ok:
-    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2]
+    retstr = retstr + " " + i[0] + "=" + i[1] + "/" + i[2] + " RAW: " + i[4] + ","
+
+retstr = retstr.strip(",")
 
 retstr = retstr + "|"
 for i in crit:
-    retstr = retstr + i[0] + "=" + i[4] + ","
-for i in warn:
-    retstr = retstr + i[0] + "=" + i[4] + ","
-for i in ok:
-    retstr = retstr + i[0] + "=" + i[4] + ","
+    if args.raw:
+        retstr = retstr + i[0] + "=" + i[4] + ";;;;"
+    if i[5] == "W":
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";" + i[2] + ":;;;"
+    else:
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";;" + i[2] + ":;;"
 
-retstr = retstr.strip(",")
+
+for i in warn:
+    if args.raw:
+        retstr = retstr + i[0] + "=" + i[4] + ";;;;"
+    if i[5] == "W":
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";" + i[2] + ":;;;"
+    else:
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";;" + i[2] + ":;;"
+
+
+
+for i in ok:
+    if args.raw:
+        retstr = retstr + i[0] + "=" + i[4] + ";;;;"
+    if i[5] == "W":
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";" + i[2] + ":;;;"
+    else:
+        retstr = retstr + i[0] + "_qual=" + i[1] + ";;" + i[2] + ":;;"
+
+
+
+
+retstr = retstr.rstrip(";") + ";;;"
+
 
 print(retstr)
 sys.exit(ret)
