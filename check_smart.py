@@ -70,7 +70,8 @@ if count_critical > 0:
 output = output + str(count_ok) + "/" + str(attribute_num) + " OK" + o_w + o_c
 if args.html:
     output = output + "</br>"
-output = output + "\n"
+else:
+    output = output + "\n"
 
 n_r = ["OK", "WARNING", "CRITICAL", "UNKNOWN"]
 
@@ -78,7 +79,8 @@ for a in result:
     output = output + a[0] + "(" + a[1] + ") " + n_r[a[7]] + " current: " + str(a[2]) + " worst: " + str(a[3]) + " thresh: " + str(a[8]) + " raw: " + str(a[6])
     if args.html:
         output = output + "</br>"
-    output = output + "\n"
+    else:
+        output = output + "\n"
 if args.noperf:
     print(output)
     sys.exit(overall_state)
